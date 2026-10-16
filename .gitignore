@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+.env
+instance/
+
+# Ignore local SQLite database
+database.db
+
+# Ignore server-side Flask session files
+flask_session/
