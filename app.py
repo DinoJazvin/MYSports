@@ -3,12 +3,12 @@ from helpers import query_db, apology
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlite3 import IntegrityError
-from models import db
+# from models import db
 
 app = Flask(__name__)
 
-with app.app_context():
-    db.create_all() 
+# with app.app_context():
+    # db.create_all() 
 
 # Configure session to use filesystem (CS50 style)
 app.config["SESSION_PERMANENT"] = False
