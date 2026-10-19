@@ -19,10 +19,6 @@ Session(app)
 def hello_world():
     return render_template('index.html')
 
-@app.route("/otherroute")
-def other_route():
-    return render_template('otherroute.html')
-
 @app.route("/register", methods=['GET', 'POST'])
 def register():
 
