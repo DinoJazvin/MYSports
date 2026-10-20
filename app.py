@@ -1,10 +1,15 @@
-from flask import Flask, redirect, render_template, request, session, flash
+from flask import Flask, redirect, render_template, request, session, flash, abort
 from helpers import query_db, apology
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlite3 import IntegrityError
+import os
+from dotenv import load_dotenv
+import requests
 # from models import db
 
+load_dotenv()
+API_KEY = os.environ.get('SPORTS_API_KEY')
 app = Flask(__name__)
 
 # with app.app_context():
@@ -84,10 +89,24 @@ def logout():
 
     return redirect('/')
 
+@app.route('/standings')
+def standings():
 
+    headers = {
+        "x-apisports-key" : API_KEY,
+    }
 
+    try:
+        # NFL Standings
+        response = requests.get("https://v1.american-football.api-sports.io/standings?league=1&season=2024", headers=headers, timeout=5)
+        response.raise_for_status()
+        standings_data = response.json()
 
+        return render_template("standings.html", response=standings_data["response"])
 
+    except requests.exceptions.RequestException as e:
+        print(f"API error occured: {e}")
+        return abort(502, description="Could not fetch data from the sports provider.")
 
 
 

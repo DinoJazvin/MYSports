@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Standings
+{% endblock %}
+
+{% block main %}
+    <h2>NFL Standings</h2>
+    {% for i in range(8) %}
+        <table class='table table-dark mb-4'>
+            <thead>
+                <tr>
+                    <!-- <th scope='col'>#</th> -->
+                    <th scope='col'>Name</th>
+                    <th scope='col'>Win</th>
+                    <th scope='col'>Loss</th>
+                    <!-- <th scope='col'>current price</th> -->
+                </tr>
+            </thead>
+            <tbody>
+            {% for j in range(4) %}
+                {% set index = (i*4) + j %}
+                <tr>
+                    <!-- <th scope='row'>{{ loop.index }}</th> -->
+                    <td>{{ response[index].team.name }}</td>
+                    <td>{{ response[index].won }}</td>
+                    <td>{{ response[index].lost }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+{% endblock %}
