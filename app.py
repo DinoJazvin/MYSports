@@ -3,17 +3,17 @@ from helpers import query_db, apology
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlite3 import IntegrityError
-import os
+import os, requests, redis, json
 from dotenv import load_dotenv
-import requests
+# import requests
 # from models import db
 
 load_dotenv()
 API_KEY = os.environ.get('SPORTS_API_KEY')
 app = Flask(__name__)
 
-# with app.app_context():
-    # db.create_all() 
+cache = redis.Redis(host='localhost', port=6379, decode_responses=True)
+CACHE_TIMEOUT = 43200 # 12 hours
 
 # Configure session to use filesystem (CS50 style)
 app.config["SESSION_PERMANENT"] = False
@@ -92,21 +92,33 @@ def logout():
 @app.route('/standings')
 def standings():
 
-    headers = {
-        "x-apisports-key" : API_KEY,
-    }
+    # 1. Check if data already in db
+    cached_data = cache.get("nfl_standings")
 
+    # 2. If cache hit, parse string back into python array format and serve it! json.loads means 'load string'
+    if cached_data:
+        print("--- REDIS CACHE HIT: Serving lightning fast data ---")
+        standings_data = json.loads(cached_data)
+        return render_template("standings.html", response=standings_data["response"])
+
+    
+    # 4. IF CACHE MISS (or expired): hit the API
+    print("--- REDIS CACHE MISS: Fetching fresh data from API-Sports ---")
     try:
-        # NFL Standings
+
+        headers = {"x-apisports-key" : API_KEY}
         response = requests.get("https://v1.american-football.api-sports.io/standings?league=1&season=2024", headers=headers, timeout=5)
         response.raise_for_status()
         standings_data = response.json()
+
+        # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
+        cache.setex("nfl_standings", CACHE_TIMEOUT, json.dumps(standings_data)) 
 
         return render_template("standings.html", response=standings_data["response"])
 
     except requests.exceptions.RequestException as e:
         print(f"API error occured: {e}")
-        return abort(502, description="Could not fetch data from the sports provider.")
+        return abort(502, description="Failed to fetch live standings.")
 
 
 
