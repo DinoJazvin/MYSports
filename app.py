@@ -121,4 +121,35 @@ def standings():
         return abort(502, description="Failed to fetch live standings.")
 
 
+@app.route('/scores')
+def scores():
 
+    # 1. Check if data already in db
+    cached_data = cache.get("nfl_scores")
+
+    # 2. If cache hit, parse string back into python array format and serve it! json.loads means 'load string'
+    if cached_data:
+        print("--- REDIS CACHE HIT: Serving lightning fast data ---")
+        scores_data = json.loads(cached_data)
+        return render_template("scores.html", response=scores_data["events"])
+
+    # 4. IF CACHE MISS (or expired): hit the API
+    print("--- REDIS CACHE MISS: Fetching fresh data from ESPN API ---")
+    try:
+        response = requests.get("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=6", timeout=5)
+        response.raise_for_status()
+        scores_data = response.json()
+
+        # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
+        cache.setex("nfl_scores", CACHE_TIMEOUT, json.dumps(scores_data)) 
+
+        # print(scores_data['events'][0]['competitions'][0]['competitors'][0]['score'])
+        # print(scores_data['events'][0]['competitions'][0]['competitors'][1]['score'])
+        
+
+        # return render_template("standings.html", scores_data=scores_data['events'])
+        return render_template("scores.html")
+
+    except requests.exceptions.RequestException as e:
+        print(f"API error occured: {e}")
+        return abort(502, description="Failed to fetch scores.")
