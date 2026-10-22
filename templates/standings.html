@@ -6,28 +6,32 @@
 
 {% block main %}
     <h2>NFL Standings</h2>
-    {% for i in range(8) %}
-        <table class='table table-dark mb-4'>
-            <thead>
-                <tr>
-                    <!-- <th scope='col'>#</th> -->
-                    <th scope='col'>Name</th>
-                    <th scope='col'>Win</th>
-                    <th scope='col'>Loss</th>
-                    <!-- <th scope='col'>current price</th> -->
-                </tr>
-            </thead>
-            <tbody>
-            {% for j in range(4) %}
-                {% set index = (i*4) + j %}
-                <tr>
-                    <!-- <th scope='row'>{{ loop.index }}</th> -->
-                    <td>{{ response[index].team.name }}</td>
-                    <td>{{ response[index].won }}</td>
-                    <td>{{ response[index].lost }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% endfor %}
+    <div class="row g-4 p-3">
+        {% set ns = namespace(k=0) %}
+        {% for i in range(8) %}
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body p-0">
+                        <table class='table table-dark mb-4'>
+                            <div class="card-header fw-bold bg-light">
+                                {{ response[ns.k]['division'] }}
+                            </div>
+                                <tbody>
+                                    {% for j in range(4) %}
+                                        {% set index = (i*4) + j %}
+                                        <tr>
+                                            <!-- <th scope='row'>{{ loop.index }}</th> -->
+                                            <td>{{ response[index].team.name }}</td>
+                                            <td>{{ response[index].won }}</td>
+                                            <td>{{ response[index].lost }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    {% set ns.k = ns.k + 4 %}
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

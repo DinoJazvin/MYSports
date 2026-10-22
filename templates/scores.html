@@ -5,14 +5,25 @@
 {% endblock %}
 
 {% block main %}
-    <h2>Welcome to the Scores Page!</h2>
+    <h2>NFL Scores</h2>
+    <div class="row g-4 p-3">
+        {% for score in scores_data %}
+        <div class="col-12 col-md-4 col-xl-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body p-0">
+                <table class='table table-dark mb-4'>
+                    <tbody>
+                    {% for ele in score.competitions[0].competitors %}
+                        <tr>
+                            <td>{{ ele.score }}</td>
+                            <td>{{ ele.team.displayName }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 {% endblock %}
-
-
-<!-- return render_template("standings.html", scores_data=scores_data['events']) -->
-<!-- print(scores_data['events'][0]['competitions'][0]['competitors'][0]['score']) -->
-<!-- foreach score in scores_data['events'] -->
-    <!-- create small table -->
-    <!-- foreach ele in score['competitors'] -->
-        <!-- create table row -->
-        <!-- render ele['score'] -->

@@ -1,5 +1,6 @@
 import sqlite3
 from flask import render_template 
+from datetime import datetime, time
 
 # This is the only "boilerplate" we need. It just opens the file.
 def query_db(query, args=()):
@@ -46,3 +47,7 @@ def apology(message, code=400):
         return s
 
     return render_template("apology.html", top=code, bottom=escape(message)), code
+
+
+def get_timeout(currentTime):
+    return ""

@@ -5,6 +5,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from sqlite3 import IntegrityError
 import os, requests, redis, json
 from dotenv import load_dotenv
+from datetime import datetime, time
+from zoneinfo import ZoneInfo
+
 # import requests
 # from models import db
 
@@ -97,13 +100,13 @@ def standings():
 
     # 2. If cache hit, parse string back into python array format and serve it! json.loads means 'load string'
     if cached_data:
-        print("--- REDIS CACHE HIT: Serving lightning fast data ---")
+        print("--- REDIS CACHE HIT: Serving lightning fast Standings data ---")
         standings_data = json.loads(cached_data)
         return render_template("standings.html", response=standings_data["response"])
 
     
     # 4. IF CACHE MISS (or expired): hit the API
-    print("--- REDIS CACHE MISS: Fetching fresh data from API-Sports ---")
+    print("--- REDIS CACHE MISS: Fetching fresh Standings data from API-Sports ---")
     try:
 
         headers = {"x-apisports-key" : API_KEY}
@@ -111,8 +114,17 @@ def standings():
         response.raise_for_status()
         standings_data = response.json()
 
+        # get current time
+        pst_zone = ZoneInfo('America/Los_Angeles')
+        now_pst = datetime.now(pst_zone)
+
+        # convert time to string (redis expects string)
+        timestamp_string = now_pst.strftime("%Y-%m-%d %H:%M:%S")
+
+
         # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
         cache.setex("nfl_standings", CACHE_TIMEOUT, json.dumps(standings_data)) 
+        cache.setex("last_refreshed_time", CACHE_TIMEOUT, timestamp_string) 
 
         return render_template("standings.html", response=standings_data["response"])
 
@@ -123,32 +135,34 @@ def standings():
 
 @app.route('/scores')
 def scores():
-
+    #  <p>{{ ele.team.name }} {{ ele.score }}</p>
     # 1. Check if data already in db
     cached_data = cache.get("nfl_scores")
 
     # 2. If cache hit, parse string back into python array format and serve it! json.loads means 'load string'
     if cached_data:
-        print("--- REDIS CACHE HIT: Serving lightning fast data ---")
+        print("--- REDIS CACHE HIT: Serving lightning fast Scores data ---")
         scores_data = json.loads(cached_data)
-        return render_template("scores.html", response=scores_data["events"])
+        # print(scores_data['events'])
+        return render_template("scores.html", scores_data=scores_data["events"])
 
     # 4. IF CACHE MISS (or expired): hit the API
-    print("--- REDIS CACHE MISS: Fetching fresh data from ESPN API ---")
+    print("--- REDIS CACHE MISS: Fetching fresh Scores data from ESPN API ---")
     try:
         response = requests.get("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=6", timeout=5)
         response.raise_for_status()
         scores_data = response.json()
-
+        # print(scores_data)
+        
         # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
         cache.setex("nfl_scores", CACHE_TIMEOUT, json.dumps(scores_data)) 
 
         # print(scores_data['events'][0]['competitions'][0]['competitors'][0]['score'])
         # print(scores_data['events'][0]['competitions'][0]['competitors'][1]['score'])
-        
 
-        # return render_template("standings.html", scores_data=scores_data['events'])
-        return render_template("scores.html")
+       
+        return render_template("scores.html", scores_data=scores_data['events'])
+        # return render_template("scores.html")
 
     except requests.exceptions.RequestException as e:
         print(f"API error occured: {e}")
