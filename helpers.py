@@ -1,6 +1,8 @@
 import sqlite3
 from flask import render_template 
 from datetime import datetime, time
+from extensions import cache 
+from zoneinfo import ZoneInfo
 
 # This is the only "boilerplate" we need. It just opens the file.
 def query_db(query, args=()):
@@ -49,5 +51,32 @@ def apology(message, code=400):
     return render_template("apology.html", top=code, bottom=escape(message)), code
 
 
-def get_timeout(currentTime):
-    return ""
+def should_cache_refresh():
+
+    # Get current time
+    pst_zone = ZoneInfo("America/Los_Angeles")
+    now_pst = datetime.now(pst_zone)
+
+    # Grab time string from redis cache
+    cached_time_string = cache.get('last_refreshed_time')
+
+    # If no recent cached time, return false
+    if cached_time_string is None:
+        return True
+
+    # convert the time from string -> datetime object so we can perform calculations on it
+    last_refreshed = datetime.strptime(cached_time_string, "%Y-%m-%d %H:%M:%S")
+    last_refreshed = last_refreshed.replace(tzinfo=pst_zone)
+
+    # Conditonnal logic to verify if cache refresh is necessary
+    current_day = now_pst.strftime('%A') # get current day
+    current_hour = now_pst.hour          # get current hour
+
+    # check if its monday @ 9 and we haven't already cached
+    if current_day == 'Monday' and current_hour == 21:
+
+        # Did we already refresh during the 9 PM block?
+        if not (last_refreshed.hour == 21 and last_refreshed.date == now_pst.date):
+            return True
+
+    return False
