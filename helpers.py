@@ -65,6 +65,8 @@ def should_cache_refresh():
     # retrieve last_refreshed_time from cache
     last_refreshed_time = cache.get('last_refreshed_time')
 
+    if not last_refreshed_time:
+        return True
     # convert last_refreshed_time to datetime object
     last_refreshed_time_object = datetime.strptime(last_refreshed_time, "%Y-%m-%d %H:%M:%S")
     # Output: 2026-10-23 15:45:30
