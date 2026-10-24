@@ -53,30 +53,29 @@ def apology(message, code=400):
 
 def should_cache_refresh():
 
-    # Get current time
-    pst_zone = ZoneInfo("America/Los_Angeles")
-    now_pst = datetime.now(pst_zone)
+    ''' Return true if its monday at 9 PM AND the most recent refresh is NOT today during the 9 PM hour '''
 
-    # Grab time string from redis cache
-    cached_time_string = cache.get('last_refreshed_time')
+    # get current time
+    now_pst = datetime.now(ZoneInfo('America/Los_Angeles'))
 
-    # If no recent cached time, return false
-    if cached_time_string is None:
+    # convert/parse string format -> 
+    current_day = now_pst.strftime("%A") # get current day 'Monday'
+    current_hour = now_pst.hour # get current hour (0 - 23)
+
+    # retrieve last_refreshed_time from cache
+    last_refreshed_time = cache.get('last_refreshed_time')
+
+    # convert last_refreshed_time to datetime object
+    last_refreshed_time_object = datetime.strptime(last_refreshed_time, "%Y-%m-%d %H:%M:%S")
+    # Output: 2026-10-23 15:45:30
+
+    last_refreshed_hour = last_refreshed_time_object.hour # hour of last refresh time  
+    last_refreshed_date = last_refreshed_time_object.date() # date of last refresh time
+    todays_date = now_pst.date # todays date                                          # day of last refresh day
+
+    # if statement to check is it monday at 9 PM, and that we haven't already checked at 9 PM window today
+    # last_refresh_day is not 
+    if current_day == 'Monday' and current_hour == 21 and current_hour != last_refreshed_hour and todays_date != last_refreshed_date:
         return True
-
-    # convert the time from string -> datetime object so we can perform calculations on it
-    last_refreshed = datetime.strptime(cached_time_string, "%Y-%m-%d %H:%M:%S")
-    last_refreshed = last_refreshed.replace(tzinfo=pst_zone)
-
-    # Conditonnal logic to verify if cache refresh is necessary
-    current_day = now_pst.strftime('%A') # get current day
-    current_hour = now_pst.hour          # get current hour
-
-    # check if its monday @ 9 and we haven't already cached
-    if current_day == 'Monday' and current_hour == 21:
-
-        # Did we already refresh during the 9 PM block?
-        if not (last_refreshed.hour == 21 and last_refreshed.date == now_pst.date):
-            return True
 
     return False

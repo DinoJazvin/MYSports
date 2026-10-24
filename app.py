@@ -122,7 +122,7 @@ def standings():
         now_pst = datetime.now(pst_zone)
         timestamp_string = now_pst.strftime("%Y-%m-%d %H:%M:%S")
 
-        # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
+        # Save standings data and time of last refresh to redis using 'setex'
         cache.setex("nfl_standings", CACHE_TIMEOUT, json.dumps(standings_data)) 
         cache.setex("last_refreshed_time", CACHE_TIMEOUT, timestamp_string) 
 
