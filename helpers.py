@@ -77,9 +77,13 @@ def should_cache_refresh():
 
     # if statement to check is it monday at 9 PM, and that we haven't already checked at 9 PM window today
     # last_refresh_day is not 
-    is_time_right = current_day in ['Monday', 'Thursday', 'Sunday'] and current_hour == 21
 
+    # checking if its 9 PM on mon, wed, or sun, or if 2 or 5 pm on sunday (post regular games)
+    is_time_right = (current_day in ['Monday', 'Thursday', 'Sunday'] and current_hour == 21) or (current_day == 'Sunday' and current_hour in [14, 17])
+
+    # checking if we've haven't already refresh today
     is_not_already_done_today = current_hour != last_refreshed_hour or todays_date != last_refreshed_date
+
 
     if is_time_right and is_not_already_done_today:
         return True
