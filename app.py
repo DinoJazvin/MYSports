@@ -1,5 +1,5 @@
 from flask import Flask, redirect, render_template, request, session, flash, abort
-from helpers import query_db, apology, should_cache_refresh
+from helpers import query_db, apology, should_cache_refresh, get_current_week 
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlite3 import IntegrityError
@@ -135,7 +135,7 @@ def standings():
 
 @app.route('/scores')
 def scores():
-    #  <p>{{ ele.team.name }} {{ ele.score }}</p>
+
     # 1. Check if data already in db
     cached_data = cache.get("nfl_scores")
 
@@ -143,16 +143,15 @@ def scores():
     if cached_data:
         print("--- REDIS CACHE HIT: Serving lightning fast Scores data ---")
         scores_data = json.loads(cached_data)
-        # print(scores_data['events'])
         return render_template("scores.html", scores_data=scores_data["events"])
 
     # 4. IF CACHE MISS (or expired): hit the API
     print("--- REDIS CACHE MISS: Fetching fresh Scores data from ESPN API ---")
     try:
-        response = requests.get("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=6", timeout=5)
+        week = get_current_week()
+        response = requests.get(f"https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week={week}", timeout=5)
         response.raise_for_status()
         scores_data = response.json()
-        # print(scores_data)
         
         # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
         cache.setex("nfl_scores", CACHE_TIMEOUT, json.dumps(scores_data)) 
@@ -160,9 +159,7 @@ def scores():
         # print(scores_data['events'][0]['competitions'][0]['competitors'][0]['score'])
         # print(scores_data['events'][0]['competitions'][0]['competitors'][1]['score'])
 
-       
         return render_template("scores.html", scores_data=scores_data['events'])
-        # return render_template("scores.html")
 
     except requests.exceptions.RequestException as e:
         print(f"API error occured: {e}")

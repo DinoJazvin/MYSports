@@ -1,4 +1,4 @@
-import sqlite3
+import sqlite3, requests
 from flask import render_template 
 from datetime import datetime, time
 from extensions import cache 
@@ -89,3 +89,15 @@ def should_cache_refresh():
         return True
 
     return False
+
+def get_current_week():
+
+    try:
+        response = requests.get("http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard", timeout=5)
+        response.raise_for_status()
+        week_data = response.json()
+        return week_data['week']['number']
+    
+    except requests.exceptions.RequestException as e:
+        print(f"API error occured: {e}")
+        return abort(502, description="Failed to fetch current week.")
