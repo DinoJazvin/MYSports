@@ -1,5 +1,5 @@
 from flask import Flask, redirect, render_template, request, session, flash, abort
-from helpers import query_db, apology, should_cache_refresh, get_current_week 
+from helpers import query_db, apology, should_cache_refresh, get_current_week, get_timeout_time
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlite3 import IntegrityError
@@ -7,11 +7,11 @@ import os, requests, json
 from dotenv import load_dotenv
 from datetime import datetime, time
 from zoneinfo import ZoneInfo
-from extensions import cache, CACHE_TIMEOUT
+from extensions import cache
 
 # import requests
 # from models import db
-
+STANDINGS_CACHE_TIMEOUT = 43200
 load_dotenv()
 API_KEY = os.environ.get('SPORTS_API_KEY')
 app = Flask(__name__)
@@ -123,8 +123,8 @@ def standings():
         timestamp_string = now_pst.strftime("%Y-%m-%d %H:%M:%S")
 
         # Save standings data and time of last refresh to redis using 'setex'
-        cache.setex("nfl_standings", CACHE_TIMEOUT, json.dumps(standings_data)) 
-        cache.setex("last_refreshed_time", CACHE_TIMEOUT, timestamp_string) 
+        cache.setex("nfl_standings", STANDINGS_CACHE_TIMEOUT, json.dumps(standings_data)) 
+        cache.setex("last_refreshed_time", STANDINGS_CACHE_TIMEOUT, timestamp_string) 
 
         return render_template("standings.html", response=standings_data["response"])
 
@@ -154,7 +154,7 @@ def scores():
         scores_data = response.json()
         
         # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
-        cache.setex("nfl_scores", CACHE_TIMEOUT, json.dumps(scores_data)) 
+        cache.setex("nfl_scores", get_timeout_time(), json.dumps(scores_data)) 
 
         # print(scores_data['events'][0]['competitions'][0]['competitors'][0]['score'])
         # print(scores_data['events'][0]['competitions'][0]['competitors'][1]['score'])

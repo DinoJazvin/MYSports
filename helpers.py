@@ -84,7 +84,6 @@ def should_cache_refresh():
     # checking if we've haven't already refresh today
     is_not_already_done_today = current_hour != last_refreshed_hour or todays_date != last_refreshed_date
 
-
     if is_time_right and is_not_already_done_today:
         return True
 
