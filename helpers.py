@@ -101,3 +101,24 @@ def get_current_week():
     except requests.exceptions.RequestException as e:
         print(f"API error occured: {e}")
         return abort(502, description="Failed to fetch current week.")
+
+
+def get_timeout_time():
+
+    # if sunday between 10 AM - 9 PM set timeout to 10 min.
+    # get current time
+    now_pst = datetime.now(ZoneInfo('America/Los_Angeles'))
+
+    # convert/parse string format 
+    current_day = now_pst.strftime("%A") # get current day 'Monday'
+    current_hour = now_pst.hour # get current hour (0 - 23)
+
+    if current_day == 'Sunday' and (current_hour >= 10 and current_hour <= 21):
+        return 600
+    
+    # if monday or thursday between 5 PM and 9 PM, set timeout to 10 min.
+    if current_day in ['Monday', 'Thursday'] and (current_hour >= 17 and current_hour <= 21):
+        return 600
+
+    # otherwise, no need to refresh otherwise, 12 hrs by for now
+    return 43200
