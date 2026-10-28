@@ -164,3 +164,29 @@ def scores():
     except requests.exceptions.RequestException as e:
         print(f"API error occured: {e}")
         return abort(502, description="Failed to fetch scores.")
+
+@app.cli.command('seed-teams')
+def test_teams():
+
+    # clear table to start
+    try:
+        query_db('DELETE FROM teams')
+    except IntegrityError:
+        return apology('Unable to clear teams table!', 400)
+
+    # Get teams data from ESPN web api and populate teams table
+    try:
+        response = requests.get("http://site.api.espn.com/apis/site/v2/sports/football/nfl/teams", timeout=5)
+        response.raise_for_status()
+        scores_data = response.json()
+        scores_data = scores_data['sports'][0]['leagues'][0]['teams']
+
+        for ele in scores_data:
+            try:
+                query_db('INSERT INTO teams (id, name, abbreviation) values (?, ?, ?)', (ele['team']['id'], ele['team']['displayName'], ele['team']['abbreviation']))
+            except IntegrityError:
+                return apology('Unable to add team to table!', 400)
+
+    except requests.exceptions.RequestException as e:
+        print(f"API error occured: {e}")
+        return abort(502, description="Failed to fetch scores.")
