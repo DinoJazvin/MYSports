@@ -1,5 +1,5 @@
 from flask import Flask, redirect, render_template, request, session, flash, abort
-from helpers import query_db, apology, should_cache_refresh, get_current_week, get_timeout_time
+from helpers import query_db, apology, should_cache_refresh, get_current_week, get_timeout_time, get_all_teams
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlite3 import IntegrityError
@@ -165,10 +165,30 @@ def scores():
         print(f"API error occured: {e}")
         return abort(502, description="Failed to fetch scores.")
 
-@app.route('/favorites')
+@app.route('/favorites', methods=['GET', 'POST'])
 def favorites():
 
-    return render_template('favorites.html')
+    teams_data = get_all_teams()
+
+    # retrieve 'selected_team' data from form
+    selected_team = request.form.get('favorite-team')
+    print(selected_team)
+
+    return render_template('favorites.html', teams_data = teams_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @app.cli.command('seed-teams')
 def test_teams():

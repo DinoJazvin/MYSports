@@ -5,5 +5,16 @@
 {% endblock %}
 
 {% block main %}
-    <h2>Select team to add to favorites!</h2>
+    <h2 class="mb-3">Select team to add to favorites!</h2>
+    <form action='/favorites' method='post'>
+        <div class='col-md-2 mx-auto'>
+            <select name='favorite-team' class="form-select text-center mb-3" aria-label="Default select example">
+                <option selected disabled hidden>-- Select team --</option>
+                {% for ele in teams_data %}
+                    <option value="{{ ele.name }}">{{ ele.name }}</option>
+                {% endfor %}
+            </select>
+            <button class='btn btn-dark' type='submit'>Add team</button>
+        </div>
+    </form>
 {% endblock %}

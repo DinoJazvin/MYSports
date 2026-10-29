@@ -122,8 +122,8 @@ def get_timeout_time():
     # otherwise, no need to refresh otherwise, 12 hrs by for now
     return 43200
 
-def add_favorite_team():
+def get_all_teams():
 
-    # sql query to add entry to user_teams table, get user_id from sessions and team from team selection
-
-    return
+    # sql query to retreive all nfl teams
+    all_teams_data = query_db('SELECT name FROM teams')
+    return all_teams_data
