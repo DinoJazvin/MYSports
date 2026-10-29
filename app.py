@@ -165,6 +165,11 @@ def scores():
         print(f"API error occured: {e}")
         return abort(502, description="Failed to fetch scores.")
 
+@app.route('/favorites')
+def favorites():
+
+    return render_template('favorites.html')
+
 @app.cli.command('seed-teams')
 def test_teams():
 

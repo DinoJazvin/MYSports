@@ -121,3 +121,9 @@ def get_timeout_time():
 
     # otherwise, no need to refresh otherwise, 12 hrs by for now
     return 43200
+
+def add_favorite_team():
+
+    # sql query to add entry to user_teams table, get user_id from sessions and team from team selection
+
+    return
