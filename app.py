@@ -24,7 +24,32 @@ Session(app)
 
 @app.route("/")
 def hello_world():
-    return render_template('index.html')
+
+    # need a query to grab abvs of persons favorite teams
+    # abv = query_db
+
+    # start w retreiving all nfl scores, and grab
+    # week = get_current_week()
+    response = requests.get(f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/sea", timeout=5)
+    response.raise_for_status()
+    team_data = response.json()
+
+    # away team
+    # print(scores_data['team']['nextEvent'][0]['competitions'][0]['competitors'][1]['team']['displayName'])
+
+    # # home team
+    # print(scores_data['team']['nextEvent'][0]['competitions'][0]['competitors'][0]['team']['displayName'])
+
+    # # game info, inside status we have displayClock, period, 
+    # print(scores_data['team']['nextEvent'][0]['competitions'][0]['status']['type']['detail'])
+
+    teams_data = team_data['team']['nextEvent'][0]['competitions'][0]['competitors']
+    game_details = team_data['team']['nextEvent'][0]['competitions'][0]['status']['type']['detail']
+    # team_logo = 
+    # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
+    # cache.setex("nfl_scores", get_timeout_time(), json.dumps(scores_data)) 
+    
+    return render_template("index.html", teams_data=teams_data, game_details=game_details)    
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -156,9 +181,6 @@ def scores():
         # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
         cache.setex("nfl_scores", get_timeout_time(), json.dumps(scores_data)) 
 
-        # print(scores_data['events'][0]['competitions'][0]['competitors'][0]['score'])
-        # print(scores_data['events'][0]['competitions'][0]['competitors'][1]['score'])
-
         return render_template("scores.html", scores_data=scores_data['events'])
 
     except requests.exceptions.RequestException as e:
@@ -170,9 +192,33 @@ def favorites():
 
     teams_data = get_all_teams()
 
-    # retrieve 'selected_team' data from form
-    selected_team = request.form.get('favorite-team')
-    print(selected_team)
+    if request.method == 'POST':
+    
+        # retrieve 'selected_team' data from form
+        selected_team = request.form.get('favorite-team')
+        print(selected_team)
+
+        # first get team_id doing Select team_id where team_name == 'selected_team'
+        team_id = query_db('SELECT id FROM teams WHERE name = (?)', (selected_team,))
+    
+        if not team_id:
+            return apology('Team name does not exist!', 400)
+        
+        # get user_id from sessions
+        user_id = session['user_id']
+        team_id = team_id[0]['id']
+
+        # make query adding selected team to user_teams table, make sure entry doesn't already exist for user
+        try:
+            query_db('INSERT INTO user_teams (user_id, team_id) values (?, ?)', (user_id, team_id))
+        except IntegrityError:
+            return apology('Team already a favorite!', 400)
+
+        # add this only after submitting form
+        flash('Team successfully added to favorites!')
+
+        # maybe redirect to homepage
+        return redirect('/')
 
     return render_template('favorites.html', teams_data = teams_data)
 
