@@ -127,3 +127,12 @@ def get_all_teams():
     # sql query to retreive all nfl teams
     all_teams_data = query_db('SELECT name FROM teams')
     return all_teams_data
+
+def get_team_abv(user_id):
+
+    # make SQL query to retreive array team abv objects
+    team_abvs = query_db('SELECT abbreviation FROM (SELECT * FROM teams JOIN user_teams ON teams.id = user_teams.team_id) WHERE user_id = (?)', (user_id,))
+    # print(team_abvs)
+
+    # return abv
+    return team_abvs

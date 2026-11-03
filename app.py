@@ -1,5 +1,5 @@
 from flask import Flask, redirect, render_template, request, session, flash, abort
-from helpers import query_db, apology, should_cache_refresh, get_current_week, get_timeout_time, get_all_teams
+from helpers import query_db, apology, should_cache_refresh, get_current_week, get_timeout_time, get_all_teams, get_team_abv
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlite3 import IntegrityError
@@ -26,13 +26,18 @@ Session(app)
 def hello_world():
 
     # need a query to grab abvs of persons favorite teams
-    # abv = query_db
+    # first contruct an array of all of the ids of the users favorite teams.
+    abv_array = get_team_abv(session['user_id'])
+
+    # loop thru array and access abv of all favorite teams
+    # for team in abv_array:
+    #     print(team['abbreviation'])
 
     # start w retreiving all nfl scores, and grab
     # week = get_current_week()
-    response = requests.get(f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/sea", timeout=5)
-    response.raise_for_status()
-    team_data = response.json()
+    # response = requests.get(f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/sea", timeout=5)
+    # response.raise_for_status()
+    # team_data = response.json()
 
     # away team
     # print(scores_data['team']['nextEvent'][0]['competitions'][0]['competitors'][1]['team']['displayName'])
@@ -43,13 +48,14 @@ def hello_world():
     # # game info, inside status we have displayClock, period, 
     # print(scores_data['team']['nextEvent'][0]['competitions'][0]['status']['type']['detail'])
 
-    teams_data = team_data['team']['nextEvent'][0]['competitions'][0]['competitors']
-    game_details = team_data['team']['nextEvent'][0]['competitions'][0]['status']['type']['detail']
+    # teams_data = team_data['team']['nextEvent'][0]['competitions'][0]['competitors']
+    # game_details = team_data['team']['nextEvent'][0]['competitions'][0]['status']['type']['detail']
     # team_logo = 
     # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
     # cache.setex("nfl_scores", get_timeout_time(), json.dumps(scores_data)) 
     
-    return render_template("index.html", teams_data=teams_data, game_details=game_details)    
+    # return render_template("index.html", teams_data=teams_data, game_details=game_details)    
+    return render_template('index.html')
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
