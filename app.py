@@ -1,5 +1,5 @@
 from flask import Flask, redirect, render_template, request, session, flash, abort
-from helpers import query_db, apology, should_cache_refresh, get_current_week, get_timeout_time, get_all_teams, get_team_abv
+from helpers import query_db, apology, should_cache_refresh, get_current_week, get_timeout_time, get_all_teams, get_team_abv, add_teamdata_cache
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlite3 import IntegrityError
@@ -29,12 +29,16 @@ def hello_world():
     # first contruct an array of all of the ids of the users favorite teams.
     abv_array = get_team_abv(session['user_id'])
 
-    # loop thru array and access abv of all favorite teams
-    # for team in abv_array:
-    #     print(team['abbreviation'])
 
     # start w retreiving all nfl scores, and grab
-    # week = get_current_week()
+    favorites_Data = []
+    for team in abv_array:
+
+        team_data = add_teamdata_cache(team['abbreviation'])
+        # check cache for team entry
+            # if present retrieve and append to favorites_Data
+
+
     # response = requests.get(f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/sea", timeout=5)
     # response.raise_for_status()
     # team_data = response.json()

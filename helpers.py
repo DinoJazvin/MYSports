@@ -1,8 +1,9 @@
 import sqlite3, requests
-from flask import render_template 
+from flask import render_template, abort
 from datetime import datetime, time
 from extensions import cache 
 from zoneinfo import ZoneInfo
+import json
 
 # This is the only "boilerplate" we need. It just opens the file.
 def query_db(query, args=()):
@@ -136,3 +137,32 @@ def get_team_abv(user_id):
 
     # return abv
     return team_abvs
+
+def add_teamdata_cache(abv):
+
+    # 1. Check if data already in db
+    cached_data = cache.get(abv)
+    
+    # If cache indeed hits, return data
+    if cached_data:
+        print("--- REDIS CACHE HIT: Fetching fresh Scores data Redis cache ---")
+        abv_data = json.loads(cached_data)
+        return abv_data
+    
+    # IF CACHE MISS (or expired): hit the API
+    print("--- REDIS CACHE MISS: Fetching fresh Scores data from ESPN API ---")
+    try:
+
+        response = requests.get(f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/{abv}", timeout=5)
+        response.raise_for_status()
+        team_data = response.json()
+        
+        # Save response to redis using 'setex' and turn dictionary into string using json.dumps(), 
+        # Change to shorter timeout later
+        cache.setex(abv, 43200, json.dumps(team_data)) 
+
+        return team_data
+
+    except requests.exceptions.RequestException as e:
+        print(f"API error occured: {e}")
+        return abort(502, description="Failed to fetch team data.")
