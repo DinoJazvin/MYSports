@@ -29,37 +29,34 @@ def hello_world():
     # first contruct an array of all of the ids of the users favorite teams.
     abv_array = get_team_abv(session['user_id'])
 
-
     # start w retreiving all nfl scores, and grab
-    favorites_Data = []
+    favorites_data = []
     for team in abv_array:
 
         team_data = add_teamdata_cache(team['abbreviation'])
-        # check cache for team entry
-            # if present retrieve and append to favorites_Data
+        favorites_data.append(team_data)
 
+    final_data = []
+    # final_data['teamName'] = []
+    # final_data['game_details'] = []
+    # final_data['teamName'] = []
+    # iterate over favorites_data and append to a final array only the data we want to send to front end
+    for ele in favorites_data:
+        temp = {}
+        try:
+            temp['name'] = ele['team']['nextEvent'][0]['competitions'][0]['competitors'][1]['team']['displayName']
+            temp['record'] = ele["team"]["nextEvent"][0]["competitions"][0]["competitors"][0]["record"][0]["displayValue"]
+            temp['logo'] = ele["team"]["logos"][0]["href"]
 
-    # response = requests.get(f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/sea", timeout=5)
-    # response.raise_for_status()
-    # team_data = response.json()
+            final_data.append(temp)
 
-    # away team
-    # print(scores_data['team']['nextEvent'][0]['competitions'][0]['competitors'][1]['team']['displayName'])
+        except (KeyError, IndexError, TypeError):
+            # Skip this team entirely, or log a warning
+            print("Skipping team due to missing data paths.")
 
-    # # home team
-    # print(scores_data['team']['nextEvent'][0]['competitions'][0]['competitors'][0]['team']['displayName'])
-
-    # # game info, inside status we have displayClock, period, 
-    # print(scores_data['team']['nextEvent'][0]['competitions'][0]['status']['type']['detail'])
-
-    # teams_data = team_data['team']['nextEvent'][0]['competitions'][0]['competitors']
-    # game_details = team_data['team']['nextEvent'][0]['competitions'][0]['status']['type']['detail']
-    # team_logo = 
-    # Save response to redis using 'setex' and turn dictionary into string using json.dumps()
-    # cache.setex("nfl_scores", get_timeout_time(), json.dumps(scores_data)) 
-    
     # return render_template("index.html", teams_data=teams_data, game_details=game_details)    
-    return render_template('index.html')
+    return render_template('index.html', final_data=final_data)
+    # return render_template('index.html')
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():

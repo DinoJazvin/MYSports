@@ -55,17 +55,10 @@
                     
                     <!-- Team Rendering Row Matrix -->
                     <div class="d-flex flex-column gap-3">
-                        {% for ele in teams_data %}
+                        {% for ele in final_data.teamName %}
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center gap-3">
-                                    <!-- Resolved logo string extraction path -->
-                                    <img src="{{ ele.team.logos.0.href }}" 
-                                         alt="{{ ele.team.displayName }} logo" 
-                                         width="32" 
-                                         height="32" 
-                                         class="object-fit-contain img-fluid">
-                                         
-                                    <span class="fw-semibold text-white">{{ ele.team.displayName }}</span>
+                                <div class="d-flex align-items-center gap-3">                 
+                                    <span class="fw-semibold text-white">{{ ele }}</span>
                                 </div>
                             </div>
                         {% endfor %}
@@ -77,7 +70,7 @@
                     <hr class="mt-0 mb-3 opacity-10" style="border-color: #2b3035;">
                     <div class="small text-muted-custom d-flex align-items-center gap-2">
                         <i class="fa-solid fa-circle-info opacity-50" style="font-size: 0.75rem;"></i>
-                        <span>{{ game_details }}</span>
+                        <span>{{ final_data.game_details }}</span>
                     </div>
                 </div>
             </div>
