@@ -53,7 +53,7 @@ Ensure you have the following installed on your machine:
 
 1. **Clone the Repository & Enter Project Directory**
    ```bash
-   git clone <your-repository-url>
+   git clone https://github.com/DinoJazvin/MYSports.git
    cd mysports
    ```
 
