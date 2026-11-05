@@ -1,7 +1,0 @@
-<!-- Resolved logo string extraction path -->
-<!-- <img src="{{ ele.team.logos.0.href }}" 
-        alt="{{ ele.team.displayName }} logo" 
-        width="32" 
-        height="32" 
-        class="object-fit-contain img-fluid">
-        -->
