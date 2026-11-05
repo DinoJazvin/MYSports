@@ -49,7 +49,8 @@ def hello_world():
             # print(ele["team"]["logos"][0]["href"])
 
             try:
-                temp['name'] = ele['team']['nextEvent'][0]['competitions'][0]['competitors'][1]['team']['displayName']
+                # temp['name'] = ele['team']['nextEvent'][0]['competitions'][0]['competitors'][1]['team']['displayName']
+                temp['name'] = ele['team']['displayName']
                 # temp['record'] = ele["team"]["nextEvent"][0]["competitions"][0]["competitors"][0]["record"][0]["displayValue"]
                 temp['record'] = ele["team"]["record"]["items"][0]["summary"]
                 temp['logo'] = ele["team"]["logos"][0]["href"]
