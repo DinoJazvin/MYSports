@@ -25,38 +25,46 @@ Session(app)
 @app.route("/")
 def hello_world():
 
-    # need a query to grab abvs of persons favorite teams
-    # first contruct an array of all of the ids of the users favorite teams.
-    abv_array = get_team_abv(session['user_id'])
+    if session.get('user_id'):
+        # need a query to grab abvs of persons favorite teams
+        # first contruct an array of all of the ids of the users favorite teams.
+        abv_array = get_team_abv(session['user_id'])
 
-    # start w retreiving all nfl scores, and grab
-    favorites_data = []
-    for team in abv_array:
+        # start w retreiving all nfl scores, and grab
+        favorites_data = []
+        for team in abv_array:
 
-        team_data = add_teamdata_cache(team['abbreviation'])
-        favorites_data.append(team_data)
+            team_data = add_teamdata_cache(team['abbreviation'])
+            favorites_data.append(team_data)
 
-    final_data = []
-    # final_data['teamName'] = []
-    # final_data['game_details'] = []
-    # final_data['teamName'] = []
-    # iterate over favorites_data and append to a final array only the data we want to send to front end
-    for ele in favorites_data:
-        temp = {}
-        try:
-            temp['name'] = ele['team']['nextEvent'][0]['competitions'][0]['competitors'][1]['team']['displayName']
-            temp['record'] = ele["team"]["nextEvent"][0]["competitions"][0]["competitors"][0]["record"][0]["displayValue"]
-            temp['logo'] = ele["team"]["logos"][0]["href"]
+        final_data = []
+        # final_data['teamName'] = []
+        # final_data['game_details'] = []
+        # final_data['teamName'] = []
+        # iterate over favorites_data and append to a final array only the data we want to send to front end
+        for ele in favorites_data:
+            temp = {}
 
-            final_data.append(temp)
+            # print(ele['team']['nextEvent'][0]['competitions'][0]['competitors'][1]['team']['displayName'])
+            # print(ele["team"]["logos"][0]["href"])
 
-        except (KeyError, IndexError, TypeError):
-            # Skip this team entirely, or log a warning
-            print("Skipping team due to missing data paths.")
+            try:
+                temp['name'] = ele['team']['nextEvent'][0]['competitions'][0]['competitors'][1]['team']['displayName']
+                # temp['record'] = ele["team"]["nextEvent"][0]["competitions"][0]["competitors"][0]["record"][0]["displayValue"]
+                temp['record'] = ele["team"]["record"]["items"][0]["summary"]
+                temp['logo'] = ele["team"]["logos"][0]["href"]
+
+                final_data.append(temp)
+
+            except (KeyError, IndexError, TypeError):
+                # Skip this team entirely, or log a warning
+                print(final_data)
+                print("Skipping team due to missing data paths.")
 
     # return render_template("index.html", teams_data=teams_data, game_details=game_details)    
-    return render_template('index.html', final_data=final_data)
-    # return render_template('index.html')
+    # print(final_data)
+        return render_template('index.html', final_data=final_data)
+    return render_template('index.html')
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -228,20 +236,6 @@ def favorites():
         return redirect('/')
 
     return render_template('favorites.html', teams_data = teams_data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @app.cli.command('seed-teams')
 def test_teams():
