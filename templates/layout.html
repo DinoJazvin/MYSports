@@ -14,8 +14,12 @@
         <!-- https://favicon.io/emoji-favicons/money-bag/ -->
         <link href="/static/favicon.ico" rel="icon">
 
-        <link href="/static/styles.css" rel="stylesheet">
-   
+        <!-- Standard icons for Chrome, Firefox, and desktop browsers -->
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+        <!-- Icon for Apple/iOS devices if someone bookmarks your app on a phone -->
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.jpg') }}">
         <title>My Sports: {% block title %}{% endblock %}</title>
     </head>
 
